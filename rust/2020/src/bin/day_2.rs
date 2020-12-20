@@ -13,7 +13,7 @@ fn check_password_1(mini: i32, maxi: i32, letter: char, password: String) -> i32
 pub fn exercise_1(lines: &Vec<String>) {
     let regex_input = regex::Regex::new(r"(\d+)-(\d+) (\w): (\w+)").unwrap();
     let mut counter = 0;
-    for line in lines{
+    for line in lines {
         let matching = regex_input.captures(line.as_str()).unwrap();
         let mini: i32 = matching
             .get(1)
@@ -80,7 +80,11 @@ pub fn exercise_2(lines: &Vec<String>) {
 }
 
 fn main() -> anyhow::Result<()> {
-    let lines : Vec<String> = io::stdin().lock().lines().map(|x| x.unwrap().into()).collect();
+    let lines: Vec<String> = io::stdin()
+        .lock()
+        .lines()
+        .map(|x| x.unwrap().into())
+        .collect();
 
     exercise_1(&lines);
     exercise_2(&lines);
