@@ -2,7 +2,7 @@ use std::io::{stdin, BufRead};
 
 use petgraph::{
     graph::{Graph, NodeIndex},
-    visit::{EdgeRef, IntoEdges, IntoNeighbors},
+    visit::EdgeRef,
 };
 
 use std::collections::{HashMap, LinkedList};
