@@ -33,7 +33,6 @@ pub fn exercise_2(field: &Field) {
 }
 
 fn main() -> anyhow::Result<()> {
-
     let mut field: Field = Vec::new();
     for line in io::stdin().lock().lines() {
         field.push(line.unwrap().chars().collect());

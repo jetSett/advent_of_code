@@ -1,3 +1,3 @@
 // Done but lost...
 
-fn main(){}
+fn main() {}
