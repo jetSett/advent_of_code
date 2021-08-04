@@ -10,7 +10,9 @@ struct Tile {
 }
 
 impl Tile {
-    fn from_lines(lines: &[Vec<char>]) -> Self {}
+    fn from_lines(lines: &[Vec<char>]) -> Self {
+        todo!()
+    }
 }
 
 fn main() {}
