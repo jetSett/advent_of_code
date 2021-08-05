@@ -4,8 +4,16 @@ use std::{
     io::BufRead,
 };
 
+use itertools::Itertools;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Ingredient(String);
+
+impl std::fmt::Display for Ingredient {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Allergen(String);
@@ -19,6 +27,9 @@ pub struct Food {
 
 fn set_minus<T: Hash + Eq>(set: HashSet<T>, minus: &HashSet<T>) -> HashSet<T> {
     set.into_iter().filter(|x| !minus.contains(x)).collect()
+}
+fn set_intersect<T: Hash + Eq>(set: HashSet<T>, inter: &HashSet<T>) -> HashSet<T> {
+    set.into_iter().filter(|x| inter.contains(x)).collect()
 }
 
 peg::parser! {
@@ -110,6 +121,52 @@ impl FoodList {
             })
             .sum()
     }
+
+    fn associate_ingredient_allergens(&self) -> HashMap<Ingredient, Option<Allergen>> {
+        let mut allergen_possibilities = self.all_possible_allergens();
+        let mut association = HashMap::new();
+
+        let mut remaining_allergens = self.all_allergens();
+        let mut remaining_ingredients = self.all_ingredients();
+
+        for (ing, all_set) in &allergen_possibilities {
+            if all_set.is_empty() {
+                association.insert(ing.clone(), None);
+                remaining_ingredients.remove(ing);
+            }
+        }
+
+        while !remaining_ingredients.is_empty() {
+            for ing in &remaining_ingredients.clone() {
+                let possibilities = allergen_possibilities.get(ing).unwrap();
+                if possibilities.len() == 1 {
+                    let all = possibilities.iter().next().unwrap();
+                    if remaining_allergens.contains(all) {
+                        remaining_allergens.remove(all);
+                        remaining_ingredients.remove(ing);
+                        association.insert(ing.clone(), Some(all.clone()));
+                    }
+                }
+            }
+            allergen_possibilities = allergen_possibilities
+                .into_iter()
+                .map(|(x, y)| (x, set_intersect(y, &remaining_allergens)))
+                .collect();
+        }
+
+        association
+    }
+
+    fn canonical_list(&self) -> String {
+        let map_ingredients_allergens = self.associate_ingredient_allergens();
+        let mut ingredients_allergens: Vec<_> = map_ingredients_allergens
+            .into_iter()
+            .filter(|(_, al)| al.is_some())
+            .map(|(x, y)| (x, y.unwrap()))
+            .collect();
+        ingredients_allergens.sort_by_key(|(_, y)| y.0.clone());
+        ingredients_allergens.into_iter().map(|x| x.0).join(",")
+    }
 }
 
 fn main() {
@@ -120,6 +177,7 @@ fn main() {
         .collect();
     let foods = FoodList::from_lines(&lines);
     println!("{:?}", foods.count_non_allergic_ingredients());
+    println!("{}", foods.canonical_list());
 }
 
 #[test]
@@ -153,5 +211,19 @@ fn test_exo1() {
         ])
         .count_non_allergic_ingredients(),
         5
+    );
+}
+
+#[test]
+fn test_exo2() {
+    assert_eq!(
+        &FoodList::from_lines(&[
+            "mxmxvkd kfcds sqjhc nhms (contains dairy, fish)".to_string(),
+            "trh fvjkl sbzzf mxmxvkd (contains dairy)".to_string(),
+            "sqjhc fvjkl (contains soy)".to_string(),
+            "sqjhc mxmxvkd sbzzf (contains fish)".to_string(),
+        ])
+        .canonical_list(),
+        "mxmxvkd,sqjhc,fvjkl"
     );
 }
