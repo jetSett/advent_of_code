@@ -1,6 +1,6 @@
 # You should run that inside the rust/<year> folder
 
-year=2020
+year=2021
 
 day_number=$1
 day=$(printf "day_%d" "${day_number}")
