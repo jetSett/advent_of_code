@@ -31,7 +31,7 @@ mod test {
     use super::*;
 
     fn gen_input_test() -> Vec<String> {
-        todo!()
+        vec![].into_iter().map(str::to_string).collect()
     }
 
     #[test]
